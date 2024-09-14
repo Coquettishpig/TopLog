@@ -1,0 +1,4 @@
+name: TopLog
+version: '1.0.0'
+main: src.toplog.TopLog
+api-version: '1.20'

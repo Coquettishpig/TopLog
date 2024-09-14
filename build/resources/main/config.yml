@@ -1,0 +1,15 @@
+mysql:
+  enabled: false
+  host: localhost
+  port: 3306
+  database: woolwars
+  username: "username"
+  password: "password"
+  use-ssl: false
+
+server-name: "your_server_name"
+
+type:
+  - "宝石购买"
+  - "顶贴"
+  - "大额转账"
