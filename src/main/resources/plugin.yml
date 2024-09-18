@@ -6,3 +6,6 @@ commands:
   toplog:
     description: "记录日志到数据库"
     usage: "/toplog <玩家名字> <类型> <自定义数据>"
+  toplogquery:
+    description: "查询日志数据"
+    usage: "/toplogquery <玩家名字> <类型> <开始时间> <结束时间>"

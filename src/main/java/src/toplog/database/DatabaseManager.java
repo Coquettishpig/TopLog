@@ -6,7 +6,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class DatabaseManager {
 
@@ -40,18 +45,55 @@ public class DatabaseManager {
                         "player_name VARCHAR(255)," +
                         "server_name VARCHAR(255)," +
                         "type VARCHAR(255)," +
-                        "custom_data TEXT)",
+                        "custom_data TEXT," +
+                        "log_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
                 PreparedStatement::executeUpdate);
+
+        // 检查表结构是否正确创建
+        checkTableStructure();
+    }
+
+    private void checkTableStructure() {
+        execute("SELECT log_time FROM toplog_data LIMIT 1", statement -> {
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) {
+                    plugin.getLogger().info("Table structure check passed.");
+                }
+            }
+        });
     }
 
     public void logToDatabase(String playerName, String type, String customData, String serverName) {
-        executeAsync("INSERT INTO toplog_data (player_name, server_name, type, custom_data) VALUES (?, ?, ?, ?)", statement -> {
+        executeAsync("INSERT INTO toplog_data (player_name, server_name, type, custom_data, log_time) VALUES (?, ?, ?, ?, ?)", statement -> {
             statement.setString(1, playerName);
             statement.setString(2, serverName);
             statement.setString(3, type);
             statement.setString(4, customData);
+            statement.setTimestamp(5, new Timestamp(System.currentTimeMillis()));
             statement.executeUpdate();
         });
+    }
+
+    public List<String> queryLogs(String playerName, String type, Date startTime, Date endTime) {
+        List<String> results = new ArrayList<>();
+        execute("SELECT * FROM toplog_data WHERE player_name = ? AND type = ? AND log_time BETWEEN ? AND ?", statement -> {
+            statement.setString(1, playerName);
+            statement.setString(2, type);
+            statement.setTimestamp(3, new Timestamp(startTime.getTime()));
+            statement.setTimestamp(4, new Timestamp(endTime.getTime()));
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    String result = String.format("ID: %d, Player: %s, Type: %s, Custom Data: %s, Time: %s",
+                            resultSet.getInt("id"),
+                            resultSet.getString("player_name"),
+                            resultSet.getString("type"),
+                            resultSet.getString("custom_data"),
+                            resultSet.getTimestamp("log_time"));
+                    results.add(result);
+                }
+            }
+        });
+        return results;
     }
 
     private void execute(String sql, ThrowingConsumer<PreparedStatement> consumer) {
