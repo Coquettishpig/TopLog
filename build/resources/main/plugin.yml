@@ -1,8 +1,0 @@
-name: TopLog
-version: 1.0.0
-main: src.toplog.TopLog
-api-version: 1.20
-commands:
-  toplog:
-    description: "记录日志到数据库"
-    usage: "/toplog <玩家名字> <类型> <自定义数据>"
