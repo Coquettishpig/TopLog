@@ -84,39 +84,46 @@ public class TopLog extends JavaPlugin implements CommandExecutor {
                 return true;
             }
         } else if (command.getName().equalsIgnoreCase("toplogquery")) {
-            if (args.length != 4) {
-                sender.sendMessage("用法: /toplogquery <玩家名字> <类型> <开始时间> <结束时间>");
-                return true;
-            }
-
-            String playerName = args[0];
-            String type = args[1];
-            String startTimeStr = args[2];
-            String endTimeStr = args[3];
-
-            Date startTime;
-            Date endTime;
-
-            try {
-                startTime = dateFormat.parse(startTimeStr);
-                endTime = dateFormat.parse(endTimeStr);
-            } catch (ParseException e) {
-                sender.sendMessage("时间格式错误，请使用 yyyy-MM-dd-HH-mm-ss 格式。");
-                return true;
-            }
-
-            // 查询数据库
-            List<String> results = databaseManager.queryLogs(playerName, type, startTime, endTime);
-
-            if (results.isEmpty()) {
-                sender.sendMessage("未找到符合条件的日志。");
-            } else {
-                sender.sendMessage("查询结果:");
-                for (String result : results) {
-                    sender.sendMessage(result);
+            // 检查发送者是否有权限
+            if (sender.hasPermission("toplog.use")) {
+                if (args.length != 4) {
+                    sender.sendMessage("用法: /toplogquery <玩家名字> <类型> <开始时间> <结束时间>");
+                    sender.sendMessage("示例：/toplogquery 114514 大额转账 2024-09-18-13-13-27-00 2024-09-18-13-15-00-00");
+                    return true;
                 }
+
+                String playerName = args[0];
+                String type = args[1];
+                String startTimeStr = args[2];
+                String endTimeStr = args[3];
+
+                Date startTime;
+                Date endTime;
+
+                try {
+                    startTime = dateFormat.parse(startTimeStr);
+                    endTime = dateFormat.parse(endTimeStr);
+                } catch (ParseException e) {
+                    sender.sendMessage("时间格式错误，请使用 yyyy-MM-dd-HH-mm-ss 格式。");
+                    return true;
+                }
+
+                // 查询数据库
+                List<String> results = databaseManager.queryLogs(playerName, type, startTime, endTime);
+
+                if (results.isEmpty()) {
+                    sender.sendMessage("未找到符合条件的日志。");
+                } else {
+                    sender.sendMessage("查询结果:");
+                    for (String result : results) {
+                        sender.sendMessage(result);
+                    }
+                }
+                return true;
+            } else {
+                sender.sendMessage("你没有权限使用该命令。");
+                return true;
             }
-            return true;
         }
         return false;
     }
